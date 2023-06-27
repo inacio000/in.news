@@ -1,6 +1,7 @@
-<h1 align="center">
-  <img src="./public/favicon.png" width="20%">
-</h1>
+<h2 align="center">
+  <img src="./public/favicon.png" width="10%">
+</h2>
+
 <h1 align="center">in.news</h1>
 
 # 🚀 Techs
