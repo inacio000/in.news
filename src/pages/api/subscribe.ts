@@ -33,6 +33,21 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             // metadata 
         })
 
+            await fauna.query(
+                q.Update(
+                    q.Ref(q.Collection('users'), user.ref.id),
+                    {
+                        data: {
+                            stripe_costumer_id: stripeCustomer.id,
+                        }
+                    }
+                )
+            )
+
+            customerId = stripeCustomer.id
+        }
+
+
         const stripeCheckoutSession = await stripe.checkout.sessions.create({
             customer: stripeCustomer.id,
             payment_method_types: ['card'],
