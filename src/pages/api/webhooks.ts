@@ -1,7 +1,57 @@
+import { stripe } from "@/src/services/stripe";
 import { NextApiRequest, NextApiResponse } from "next";
+import { Readable } from "stream";
+import Stripe from "stripe";
 
-export default (req: NextApiRequest, res: NextApiResponse) => {
-    console.log('Event received')
+// Convertendo Readable streaming em um objeto (requisição)
+async function buffer(readable: Readable) {
+    const chunks = [];
 
-    res.status(200).json({ ok: true })
+    for await (const chunk of readable) {
+        chunks.push(
+            typeof chunk === "string" ? Buffer.from(chunk) : chunk
+        );
+    }
+
+    return Buffer.concat(chunks);
+}
+
+export const config = {
+    api: {
+        bodyParser: false
+    }
+}
+
+// Uma Array sem elementos duplicados
+const relevantEvents = new Set([
+    'checkout.session.completed'
+])
+
+export default async (req: NextApiRequest, res: NextApiResponse) => {
+    if (req.method === 'POST') {
+        const buf = await buffer(req)
+        // const secret = req.headers["stripe-signature"];
+        const secret: string = Array.isArray(req.headers['stripe-signature']) ? req.headers['stripe-signature'][0] : req.headers['stripe-signature'] || '';
+
+        let event: Stripe.Event;
+
+        try {
+            event = stripe.webhooks.constructEvent(buf, secret, process.env.STRIPE_WEBHOOK_SECRET!)
+        } catch (err: any) {
+            return res.status(400).send(`Webhook error: ${err.message}`);
+        }
+
+        const { type } = event;
+
+        if (relevantEvents.has(type)) {
+            // do something
+            console.log('Event received: ', event)
+        }
+
+        res.json({ received: true})
+    } else {
+        res.setHeader('Allow', 'POST')
+        res.status(405).end('Method Not Allowed')
+    }
+
 }
