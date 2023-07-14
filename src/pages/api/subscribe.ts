@@ -1,3 +1,5 @@
+import { fauna } from "@/src/services/fauna";
+import { query as q } from "faunadb";
 import { stripe } from "@/src/services/stripe";
 import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
@@ -28,11 +30,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
         if (!customerId) {              
             // Creating user
-        const stripeCustomer = await stripe.customers.create({
-            email: session?.user?.email!,
-            // metadata 
-        })
-
+            const stripeCustomer = await stripe.customers.create({
+                email: session?.user?.email!,
+                // metadata 
+            })
+    
             await fauna.query(
                 q.Update(
                     q.Ref(q.Collection('users'), user.ref.id),
@@ -49,7 +51,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
 
         const stripeCheckoutSession = await stripe.checkout.sessions.create({
-            customer: stripeCustomer.id,
+            customer: customerId,
             payment_method_types: ['card'],
             billing_address_collection: 'required',
             line_items: [
