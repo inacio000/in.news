@@ -2,9 +2,19 @@ import Head from 'next/head'
 import styles from './styles.module.scss'
 import { GetStaticProps } from 'next'
 import { createClient } from '@/src/prismicio'
-import { PrismicRichText } from '@prismicio/react'
 
-export default function Posts() {
+type Post = {
+    slug: String;
+    title: String;
+    except: { text: String };
+    updatedAt: String;
+}
+
+interface PostsProps {
+    posts: Post[];
+}
+
+export default function Posts( { posts }: PostsProps) {
 
     return (
         <>
@@ -14,26 +24,16 @@ export default function Posts() {
 
             <main className={styles.container}>
                 <div className={styles.posts}>
-                    <a href='#'>
-                        <time>26th July 2023</time>
-                        <strong>Creating a Monorepo with Lerna & Yarn Workspaces</strong>
-                        <p>In this guide, you will learn how to create a Monorepo to manage multiple packages with a shared build, test, and release process.</p>
-                    </a>
-                    <a href='#'>
-                        <time>26th July 2023</time>
-                        <strong>Creating a Monorepo with Lerna & Yarn Workspaces</strong>
-                        <p>In this guide, you will learn how to create a Monorepo to manage multiple packages with a shared build, test, and release process.</p>
-                    </a>
-                    <a href='#'>
-                        <time>26th July 2023</time>
-                        <strong>Creating a Monorepo with Lerna & Yarn Workspaces</strong>
-                        <p>In this guide, you will learn how to create a Monorepo to manage multiple packages with a shared build, test, and release process.</p>
-                    </a>
-                    <a href='#'>
-                        <time>26th July 2023</time>
-                        <strong>Creating a Monorepo with Lerna & Yarn Workspaces</strong>
-                        <p>In this guide, you will learn how to create a Monorepo to manage multiple packages with a shared build, test, and release process.</p>
-                    </a>
+                    {
+                        posts.map((post) => (
+                            <a href='#' key={`post_${post.slug}`}>
+                                <time>{post.updatedAt}</time>
+                                <strong>{post.title}</strong>
+                                <p>{post.except.text}</p>
+                            </a>
+
+                        ))
+                    }
                 </div>
             </main>
         </>
@@ -45,18 +45,25 @@ export const getStaticProps: GetStaticProps = async ({ previewData }) => {
 const client = createClient({ previewData });
 const response = await client.getAllByType('posts');
 
-console.log(JSON.stringify(response, null, 2));
+const PrismicDom = require('prismic-dom');
 
-const posts = response.results.map( (post: { uid: any; data: { date: { title: any; content: any[] } } }) =>{
+// console.log(JSON.stringify(response, null, 2));
+// console.log(typeof(response))
+
+const posts = response.map( (post) =>{
     return {
         slug: post.uid,
-        title: PrismicRichText.asText(post.data.date.title),
-        except: post.data.date.content.find( (content: { type: string }) => content.type === 'paragraph')?.text ?? '',
+        title: PrismicDom.RichText.asText(post.data.title),
+        except: post.data.content.find( (content: { type: string }) => content.type === 'paragraph') || '',
+        updatedAt: new Date(post.last_publication_date).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        }),
     }
 })
 
-
   return {
-    props: {response},
+    props: { posts },
   };
 };
