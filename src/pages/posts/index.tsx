@@ -2,6 +2,7 @@ import Head from 'next/head'
 import styles from './styles.module.scss'
 import { GetStaticProps } from 'next'
 import { createClient } from '@/src/prismicio'
+import Link from 'next/link'
 
 type Post = {
     slug: String;
@@ -26,11 +27,11 @@ export default function Posts( { posts }: PostsProps) {
                 <div className={styles.posts}>
                     {
                         posts.map((post) => (
-                            <a href='#' key={`post_${post.slug}`}>
+                            <Link key={`post_${post.slug}`} href={`/posts/${post.slug}`}>
                                 <time>{post.updatedAt}</time>
                                 <strong>{post.title}</strong>
                                 <p>{post.except.text}</p>
-                            </a>
+                            </Link>
 
                         ))
                     }
