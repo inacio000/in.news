@@ -3,6 +3,7 @@ import { GetServerSideProps } from "next"
 import { getSession } from "next-auth/react"
 import Head from "next/head";
 import styles from './post.module.scss'
+import { ParsedUrlQuery } from "querystring";
 
 interface PostProps {
     post: {
@@ -35,10 +36,15 @@ export default function Post({ post }: PostProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ req, params }) => {
+    if (!params || !('slug' in params)) {
+        return {
+          notFound: true, // Retorna página de erro 404 se não encontrar o slug
+        };
+      }
+      
     const session = await getSession({ req });
     const PrismicDom = require('prismic-dom');
-    const { slug }: any = params;
-    console.log(session)
+    const { slug } = params as ParsedUrlQuery;
 
     if (!(session?.activeSubscription)) {
         return{

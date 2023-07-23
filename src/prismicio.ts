@@ -19,8 +19,8 @@ const routes: prismic.ClientConfig["routes"] = [
     path: "/posts",
   },
   // {
-  //   type: "page",
-  //   path: "/:uid",
+  //   type: "posts",
+  //   path: "/posts/preview",
   // },
 ];
 
