@@ -56,7 +56,7 @@ const posts = response.map( (post) =>{
         slug: post.uid,
         title: PrismicDom.RichText.asText(post.data.title),
         except: post.data.content.find( (content: { type: string }) => content.type === 'paragraph') || '',
-        updatedAt: new Date(post.last_publication_date).toLocaleDateString('pt-BR', {
+        updatedAt: new Date(post.last_publication_date).toLocaleDateString('ru-RU', {
             day: '2-digit',
             month: 'long',
             year: 'numeric',
