@@ -1,7 +1,7 @@
 import { createClient } from "@/src/prismicio";
 import { GetStaticPaths, GetStaticProps } from "next"
 import Head from "next/head";
-import styles from '../post.module.scss'
+import styles from '@/src/pages/posts/styles.module.scss'
 import { ParsedUrlQuery } from "querystring";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -68,7 +68,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
     const prismic = createClient()
 
-    const response = await (await prismic.getByUID('posts', String(slug), {}));
+    const response = await prismic.getByUID('posts', String(slug), {});
 
     const post = {
         slug,

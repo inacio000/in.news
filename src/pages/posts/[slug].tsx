@@ -25,7 +25,7 @@ export default function Post({ post }: PostProps) {
                 <article className={styles.post}>
                     <h1>{post.title}</h1>
                     <time>{post.updatedAt}</time>
-                    <div 
+                    <div
                         dangerouslySetInnerHTML={{ __html: post.content }}
                         className={styles.postContent}
                     />
@@ -38,16 +38,16 @@ export default function Post({ post }: PostProps) {
 export const getServerSideProps: GetServerSideProps = async ({ req, params }) => {
     if (!params || !('slug' in params)) {
         return {
-          notFound: true, // Retorna página de erro 404 se não encontrar o slug
+            notFound: true,
         };
-      }
-      
+    }
+
     const session = await getSession({ req });
     const PrismicDom = require('prismic-dom');
     const { slug } = params as ParsedUrlQuery;
 
     if (!(session?.activeSubscription)) {
-        return{
+        return {
             redirect: {
                 destination: '/',
                 permanent: false,
@@ -55,24 +55,31 @@ export const getServerSideProps: GetServerSideProps = async ({ req, params }) =>
         }
     }
 
-    const prismic = createClient()
+    try {
+        const prismic = createClient();
 
-    const response = await prismic.getByUID('posts', String(slug), {});
+        const response = await prismic.getByUID('posts', String(slug), {});
 
-    const post = {
-        slug,
-        title: PrismicDom.RichText.asText(response.data.title),
-        content: PrismicDom.RichText.asHtml(response.data.content),
-        updatedAt: new Date(response.last_publication_date).toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric',
-        }),
-    }
-
-    return {
-        props: {
-            post,
+        const post = {
+            slug,
+            title: PrismicDom.RichText.asText(response.data.title),
+            content: PrismicDom.RichText.asHtml(response.data.content),
+            updatedAt: new Date(response.last_publication_date).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+            }),
         }
+
+        return {
+            props: {
+                post,
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching document from Prismic:', error);
+        return {
+            notFound: true,
+        };
     }
 }
